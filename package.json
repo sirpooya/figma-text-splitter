@@ -1,0 +1,23 @@
+{
+  "name": "figma-text-splitter",
+  "version": "1.0.0",
+  "description": "A Figma plugin to split text layers by delimiter",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "figma",
+    "plugin",
+    "text",
+    "splitter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.88.0",
+    "typescript": "^5.0.0"
+  }
+}
+
