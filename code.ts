@@ -353,13 +353,16 @@ figma.on('run', ({ command, parameters }) => {
       figma.notify('Please enter a delimiter');
       figma.closePlugin();
     }
+  } else if (command === 'show-ui') {
+    // Show full UI
+    figma.showUI(__html__, { width: 300, height: 200 });
   } else {
-    // Default: show full UI
+    // Default: show full UI (for direct plugin run)
     figma.showUI(__html__, { width: 300, height: 200 });
   }
 });
 
-// Show UI on plugin start (for direct plugin run)
+// Show UI on plugin start (for direct plugin run - legacy support)
 if (!figma.command) {
   figma.showUI(__html__, { width: 300, height: 200 });
 }

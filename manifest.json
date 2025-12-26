@@ -8,14 +8,11 @@
   "editorType": [
     "figma"
   ],
-  "parameters": [
-    {
-      "name": "Delimiter",
-      "key": "delimiter",
-      "allowFreeform": true
-    }
-  ],
   "menu": [
+    {
+      "name": "Text Splitter",
+      "command": "show-ui"
+    },
     {
       "name": "Split with",
       "command": "split-with",
