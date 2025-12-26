@@ -8,7 +8,7 @@
     "figma"
   ],
   "networkAccess": {
-    "allowedDomains": []
+    "allowedDomains": ["none"]
   }
 }
 

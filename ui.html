@@ -107,7 +107,6 @@
         type="text" 
         id="delimiter" 
         placeholder="e.g., comma, semicolon, space"
-        value=","
       />
       <div class="info">Enter the character(s) to split text by</div>
     </div>
@@ -125,7 +124,6 @@
     
     // Focus on input when plugin opens
     delimiterInput.focus();
-    delimiterInput.select();
     
     // Handle Enter key
     delimiterInput.addEventListener('keypress', (e) => {
