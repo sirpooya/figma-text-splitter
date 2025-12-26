@@ -10,7 +10,7 @@
   ],
   "menu": [
     {
-      "name": "Text Splitter",
+      "name": "Run Plugin",
       "command": "show-ui"
     },
     {
