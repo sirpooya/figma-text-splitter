@@ -148,7 +148,7 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
     
     // Create new text nodes for each part
     const newNodes: TextNode[] = [];
-    let currentY = originalY;
+    let currentTextIndex = 0; // Track position in original text
     
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
@@ -157,18 +157,42 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
       // Skip empty parts
       if (part === '') {
         console.log('  SKIP: Empty part');
+        // Still advance the text index past the delimiter
+        currentTextIndex += delimiter.length;
         continue;
       }
       
       try {
+        // Calculate the start position of this part in the original text
+        const partStartIndex = currentTextIndex;
+        
+        // Get font and style from the first character of this specific part
+        let partFontName: FontName = fontName;
+        let partTextStyle: string | undefined = textStyle ? (typeof textStyle === 'string' ? textStyle : undefined) : undefined;
+        try {
+          if (part.length > 0 && partStartIndex < originalText.length) {
+            const endIndex = Math.min(partStartIndex + 1, originalText.length);
+            partFontName = textNode.getRangeFontName(partStartIndex, endIndex) as FontName;
+            const rangeTextStyle = textNode.getRangeTextStyleId(partStartIndex, endIndex);
+            if (rangeTextStyle !== figma.mixed && typeof rangeTextStyle === 'string') {
+              partTextStyle = rangeTextStyle;
+            }
+            console.log('  Font name from part range:', partFontName);
+            console.log('  Text style from part range:', partTextStyle);
+          }
+        } catch (error) {
+          console.error('  ERROR getting part font/style:', error);
+          // Use defaults
+        }
+        
         // Create new text node
         console.log('  Creating new text node...');
         const newNode = figma.createText();
         console.log('  Text node created, ID:', newNode.id);
         
         // Load font and set properties BEFORE setting characters
-        await figma.loadFontAsync(fontName);
-        newNode.fontName = fontName;
+        await figma.loadFontAsync(partFontName);
+        newNode.fontName = partFontName;
         newNode.fontSize = fontSize;
         console.log('  Font properties set');
         
@@ -177,12 +201,18 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
         newNode.characters = part;
         console.log('  Characters set successfully');
         
+        // Apply text style if available
+        if (partTextStyle) {
+          newNode.textStyleId = partTextStyle;
+          console.log('  Text style applied');
+        }
+        
+        // Advance text index past this part and the delimiter
+        currentTextIndex += part.length + delimiter.length;
+        
         // Apply other styling properties
         if (textAlign) {
           newNode.textAlignHorizontal = textAlign;
-        }
-        if (textStyle) {
-          newNode.textStyleId = textStyle;
         }
         if (fills && Array.isArray(fills)) {
           newNode.fills = fills;
@@ -194,9 +224,9 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
           newNode.lineHeight = lineHeight;
         }
         
-        // Position the new node
+        // Position the new node (same position for all, Auto-Layout will handle spacing)
         newNode.x = originalX;
-        newNode.y = currentY;
+        newNode.y = originalY;
         console.log('  Position set to:', { x: newNode.x, y: newNode.y });
         
         // Add to parent node (the parent of the original text node)
@@ -217,11 +247,6 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
         newNodes.push(newNode);
         allNewNodes.push(newNode);
         console.log('  Node added to arrays');
-        
-        // Calculate next Y position (add some spacing)
-        const spacing = fontSize * 0.2;
-        currentY += newNode.height + spacing;
-        console.log('  Next Y position:', currentY);
       } catch (error) {
         console.error(`  ERROR creating part ${i + 1}:`, error);
       }
@@ -242,7 +267,7 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
         // Create Auto-Layout frame
         const autoLayoutFrame = figma.createFrame();
         autoLayoutFrame.name = 'Text Split';
-        autoLayoutFrame.layoutMode = 'VERTICAL';
+        autoLayoutFrame.layoutMode = 'HORIZONTAL';
         autoLayoutFrame.primaryAxisSizingMode = 'AUTO';
         autoLayoutFrame.counterAxisSizingMode = 'AUTO';
         autoLayoutFrame.paddingLeft = 0;
@@ -353,19 +378,11 @@ figma.on('run', ({ command, parameters }) => {
       figma.notify('Please enter a delimiter');
       figma.closePlugin();
     }
-  } else if (command === 'show-ui') {
-    // Show full UI
-    figma.showUI(__html__, { width: 300, height: 200 });
   } else {
-    // Default: show full UI (for direct plugin run)
-    figma.showUI(__html__, { width: 300, height: 200 });
+    // Show UI for all other cases (show-ui command, direct plugin run, etc.)
+    figma.showUI(__html__, { width: 300, height: 156 });
   }
 });
-
-// Show UI on plugin start (for direct plugin run - legacy support)
-if (!figma.command) {
-  figma.showUI(__html__, { width: 300, height: 200 });
-}
 
 console.log('UI shown');
 
