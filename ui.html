@@ -118,37 +118,103 @@
   </div>
 
   <script>
+    console.log('UI: Script loading...');
     const delimiterInput = document.getElementById('delimiter');
     const splitButton = document.getElementById('split');
     const cancelButton = document.getElementById('cancel');
     
+    console.log('UI: Elements found:', {
+      delimiterInput: !!delimiterInput,
+      splitButton: !!splitButton,
+      cancelButton: !!cancelButton
+    });
+    
     // Focus on input when plugin opens
-    delimiterInput.focus();
+    if (delimiterInput) {
+      delimiterInput.focus();
+    }
     
     // Handle Enter key
-    delimiterInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        splitButton.click();
+    if (delimiterInput) {
+      delimiterInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          console.log('UI: Enter key pressed');
+          if (splitButton) {
+            splitButton.click();
+          }
+        }
+      });
+    }
+    
+    if (splitButton) {
+      console.log('UI: Adding click listener to split button');
+      
+      // Try multiple event types
+      splitButton.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('UI: Split button clicked (onclick)!');
+        handleSplit();
+      };
+      
+      splitButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('UI: Split button clicked (addEventListener)!');
+        handleSplit();
+      }, true);
+      
+      function handleSplit() {
+        console.log('UI: handleSplit called!');
+        const delimiter = delimiterInput ? delimiterInput.value : '';
+        console.log('UI: Delimiter value:', delimiter);
+        console.log('UI: Delimiter length:', delimiter.length);
+        console.log('UI: Delimiter char codes:', delimiter.split('').map(c => c.charCodeAt(0)));
+        
+        if (!delimiter || delimiter.trim() === '') {
+          alert('Please enter a delimiter');
+          return;
+        }
+        
+        try {
+          const message = { 
+            pluginMessage: { 
+              type: 'split-text', 
+              delimiter: delimiter 
+            } 
+          };
+          console.log('UI: Sending message:', JSON.stringify(message));
+          console.log('UI: parent object:', parent);
+          console.log('UI: parent.postMessage exists:', typeof parent.postMessage);
+          
+          if (parent && parent.postMessage) {
+            parent.postMessage(message, '*');
+            console.log('UI: Message sent successfully');
+          } else {
+            console.error('UI: parent.postMessage not available!');
+            alert('Error: Cannot send message to plugin');
+          }
+        } catch (error) {
+          console.error('UI: Error sending message:', error);
+          alert('Error: ' + error);
+        }
       }
-    });
+    } else {
+      console.error('UI: Split button not found!');
+    }
     
-    splitButton.addEventListener('click', () => {
-      const delimiter = delimiterInput.value;
-      parent.postMessage({ 
-        pluginMessage: { 
-          type: 'split-text', 
-          delimiter: delimiter 
-        } 
-      }, '*');
-    });
+    if (cancelButton) {
+      cancelButton.addEventListener('click', () => {
+        console.log('UI: Cancel button clicked');
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'cancel' 
+          } 
+        }, '*');
+      });
+    }
     
-    cancelButton.addEventListener('click', () => {
-      parent.postMessage({ 
-        pluginMessage: { 
-          type: 'cancel' 
-        } 
-      }, '*');
-    });
+    console.log('UI: Event listeners attached');
   </script>
 </body>
 </html>
