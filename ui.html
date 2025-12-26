@@ -99,8 +99,6 @@
 </head>
 <body>
   <div class="container">
-    <h1>Text Splitter</h1>
-    
     <div>
       <label class="label" for="delimiter">Delimiter</label>
       <input 
@@ -109,6 +107,13 @@
         placeholder="e.g., comma, semicolon, space"
       />
       <div class="info">Enter the character(s) to split text by</div>
+    </div>
+    
+    <div>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="wrapAutoLayout" style="cursor: pointer;" />
+        <span class="label" style="margin: 0;">Wrap in Auto-Layout</span>
+      </label>
     </div>
     
     <div class="button-group">
@@ -123,10 +128,13 @@
     const splitButton = document.getElementById('split');
     const cancelButton = document.getElementById('cancel');
     
+    const wrapAutoLayoutCheckbox = document.getElementById('wrapAutoLayout');
+    
     console.log('UI: Elements found:', {
       delimiterInput: !!delimiterInput,
       splitButton: !!splitButton,
-      cancelButton: !!cancelButton
+      cancelButton: !!cancelButton,
+      wrapAutoLayoutCheckbox: !!wrapAutoLayoutCheckbox
     });
     
     // Focus on input when plugin opens
@@ -167,20 +175,18 @@
       function handleSplit() {
         console.log('UI: handleSplit called!');
         const delimiter = delimiterInput ? delimiterInput.value : '';
+        const wrapInAutoLayout = wrapAutoLayoutCheckbox ? wrapAutoLayoutCheckbox.checked : false;
         console.log('UI: Delimiter value:', delimiter);
         console.log('UI: Delimiter length:', delimiter.length);
         console.log('UI: Delimiter char codes:', delimiter.split('').map(c => c.charCodeAt(0)));
-        
-        if (!delimiter || delimiter.trim() === '') {
-          alert('Please enter a delimiter');
-          return;
-        }
+        console.log('UI: Wrap in Auto-Layout:', wrapInAutoLayout);
         
         try {
           const message = { 
             pluginMessage: { 
               type: 'split-text', 
-              delimiter: delimiter 
+              delimiter: delimiter,
+              wrapInAutoLayout: wrapInAutoLayout
             } 
           };
           console.log('UI: Sending message:', JSON.stringify(message));

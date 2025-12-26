@@ -23,9 +23,11 @@ figma.ui.onmessage = async (msg) => {
   
   if (msg.type === 'split-text') {
     const delimiter = msg.delimiter;
+    const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
     console.log('Delimiter received:', delimiter);
     console.log('Delimiter length:', delimiter ? delimiter.length : 0);
     console.log('Delimiter char codes:', delimiter ? delimiter.split('').map((c: string) => c.charCodeAt(0)) : []);
+    console.log('Wrap in Auto-Layout:', wrapInAutoLayout);
     
     if (!delimiter || delimiter.trim() === '') {
       console.log('ERROR: Delimiter is empty');
@@ -56,7 +58,7 @@ figma.ui.onmessage = async (msg) => {
     figma.notify(`Processing ${textNodes.length} text layer(s) with delimiter: "${delimiter}"`);
 
     let totalSplit = 0;
-    const allNewNodes: TextNode[] = [];
+    const allNewNodes: (TextNode | FrameNode)[] = [];
     
     // Process each text node individually
     for (let nodeIndex = 0; nodeIndex < textNodes.length; nodeIndex++) {
@@ -247,6 +249,75 @@ figma.ui.onmessage = async (msg) => {
         console.log('Removing original node...');
         textNode.remove();
         console.log('Original node removed');
+        
+        // Wrap in Auto-Layout if requested
+        if (wrapInAutoLayout && newNodes.length > 0) {
+          console.log('Wrapping nodes in Auto-Layout frame...');
+          
+          // Create Auto-Layout frame
+          const autoLayoutFrame = figma.createFrame();
+          autoLayoutFrame.name = 'Text Split';
+          autoLayoutFrame.layoutMode = 'VERTICAL';
+          autoLayoutFrame.primaryAxisSizingMode = 'AUTO';
+          autoLayoutFrame.counterAxisSizingMode = 'AUTO';
+          autoLayoutFrame.paddingLeft = 0;
+          autoLayoutFrame.paddingRight = 0;
+          autoLayoutFrame.paddingTop = 0;
+          autoLayoutFrame.paddingBottom = 0;
+          autoLayoutFrame.itemSpacing = 0;
+          // Remove background
+          autoLayoutFrame.fills = [];
+          
+          // Position frame at original node position
+          autoLayoutFrame.x = originalX;
+          autoLayoutFrame.y = originalY;
+          
+          // Move all new nodes into the Auto-Layout frame
+          for (const newNode of newNodes) {
+            // Remove from current parent
+            const currentParent = newNode.parent;
+            if (currentParent && 'removeChild' in currentParent) {
+              try {
+                (currentParent as any).removeChild(newNode);
+              } catch (e) {
+                console.log('Could not remove from parent, continuing...');
+              }
+            }
+            // Add to Auto-Layout frame
+            autoLayoutFrame.appendChild(newNode);
+          }
+          
+          // Resize frame to fit content
+          autoLayoutFrame.resize(autoLayoutFrame.width, autoLayoutFrame.height);
+          
+          // Add Auto-Layout frame to parent
+          if (parent && (parent.type === 'FRAME' || parent.type === 'GROUP' || parent.type === 'SECTION' || parent.type === 'COMPONENT' || parent.type === 'INSTANCE')) {
+            parent.appendChild(autoLayoutFrame);
+            console.log('Auto-Layout frame appended to parent');
+          } else if (parent && 'appendChild' in parent) {
+            parent.appendChild(autoLayoutFrame);
+            console.log('Auto-Layout frame appended to parent (method check)');
+          } else {
+            figma.currentPage.appendChild(autoLayoutFrame);
+            console.log('Auto-Layout frame appended to current page (fallback)');
+          }
+          
+          // Replace newNodes array with the Auto-Layout frame for selection
+          const frameIndex = allNewNodes.indexOf(newNodes[0]);
+          if (frameIndex !== -1) {
+            // Remove all new nodes from allNewNodes and add the frame
+            for (let i = 0; i < newNodes.length; i++) {
+              const index = allNewNodes.indexOf(newNodes[i]);
+              if (index !== -1) {
+                allNewNodes.splice(index, 1);
+              }
+            }
+            allNewNodes.push(autoLayoutFrame);
+          }
+          
+          console.log('Auto-Layout frame created and nodes wrapped');
+        }
+        
         totalSplit++;
       } else {
         console.log('No new nodes created, keeping original');
