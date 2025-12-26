@@ -307,16 +307,16 @@ figma.on('run', ({ command, parameters }) => {
     const wrapInAutoLayout = false;
     
     if (delimiter && delimiter.trim() !== '') {
-      performSplit(delimiter, wrapInAutoLayout);
+      performSplit(delimiter, wrapInAutoLayout, false, false);
     } else {
       figma.notify('Please enter a delimiter');
       figma.closePlugin();
     }
   } else if (command === 'split-by-line') {
     // Split by newline character with vertical stacking
-    performSplit('\n', false, true);
+    performSplit('\n', false, true, true);
   } else {
-    figma.showUI(__html__, { width: 300, height: 156, themeColors: true });
+    figma.showUI(__html__, { width: 300, height: 186, themeColors: true });
   }
 });
 
@@ -326,12 +326,12 @@ figma.ui.onmessage = async (msg) => {
     if (msg.type === 'split-text') {
       const delimiter = msg.delimiter;
       const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
-      await performSplit(delimiter, wrapInAutoLayout, false);
+      await performSplit(delimiter, wrapInAutoLayout, false, false);
     }
     
     if (msg.type === 'split-by-line') {
       const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
-      await performSplit('\n', wrapInAutoLayout, true);
+      await performSplit('\n', wrapInAutoLayout, true, true);
     }
     
     if (msg.type === 'cancel') {

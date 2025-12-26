@@ -116,7 +116,6 @@
       border-radius: 6px;
       padding: 2px;
       gap: 2px;
-      margin-bottom: 12px;
     }
     
     .segmented-control-item {
@@ -146,21 +145,29 @@
     .delimiter-input-container.hidden {
       display: none;
     }
+    
+    .mode-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="segmented-control">
-      <button class="segmented-control-item" id="mode-line">Line</button>
-      <button class="segmented-control-item active" id="mode-delimiter">Delimiter</button>
-    </div>
-    
-    <div class="delimiter-input-container" id="delimiterContainer">
-      <input 
-        type="text" 
-        id="delimiter" 
-        placeholder="comma, semicolon, space"
-      />
+    <div class="mode-group">
+      <div class="segmented-control">
+        <button class="segmented-control-item" id="mode-line">Line</button>
+        <button class="segmented-control-item active" id="mode-delimiter">Delimiter</button>
+      </div>
+      
+      <div class="delimiter-input-container" id="delimiterContainer">
+        <input 
+          type="text" 
+          id="delimiter" 
+          placeholder="comma, semicolon, space"
+        />
+      </div>
     </div>
     
     <div class="checkbox-container">
