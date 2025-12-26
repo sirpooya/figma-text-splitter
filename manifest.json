@@ -1,9 +1,10 @@
 {
   "name": "Text Splitter",
-  "id": "text-splitter",
+  "id": "1586488046642439664",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
+  "documentAccess": "dynamic-page",
   "editorType": [
     "figma"
   ],
