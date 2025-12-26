@@ -6,8 +6,9 @@ function escapeRegex(str: string): string {
 }
 
 // Extract split logic into a reusable function
-async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
-  if (!delimiter || delimiter.trim() === '') {
+async function performSplit(delimiter: string, wrapInAutoLayout: boolean, stackVertically: boolean = false) {
+  // Allow newline character even though it's whitespace
+  if (!delimiter || (delimiter.trim() === '' && delimiter !== '\n' && delimiter !== '\r\n')) {
     figma.notify('Please enter a delimiter');
     return;
   }
@@ -131,6 +132,7 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
     // Create new text nodes for each part
     const newNodes: TextNode[] = [];
     let currentTextIndex = 0;
+    let currentY = originalY; // Track Y position for vertical stacking
     
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
@@ -196,7 +198,12 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean) {
         
         // Position the new node
         newNode.x = originalX;
-        newNode.y = originalY;
+        newNode.y = currentY;
+        
+        // If stacking vertically (for split by line), increment Y position by text height
+        if (stackVertically) {
+          currentY += newNode.height;
+        }
         
         // Add to parent
         if (parent && (parent.type === 'FRAME' || parent.type === 'GROUP' || parent.type === 'SECTION' || parent.type === 'COMPONENT' || parent.type === 'INSTANCE')) {
@@ -304,6 +311,9 @@ figma.on('run', ({ command, parameters }) => {
       figma.notify('Please enter a delimiter');
       figma.closePlugin();
     }
+  } else if (command === 'split-by-line') {
+    // Split by newline character with vertical stacking
+    performSplit('\n', false, true);
   } else {
     figma.showUI(__html__, { width: 300, height: 156 });
   }
@@ -315,7 +325,7 @@ figma.ui.onmessage = async (msg) => {
     if (msg.type === 'split-text') {
       const delimiter = msg.delimiter;
       const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
-      await performSplit(delimiter, wrapInAutoLayout);
+      await performSplit(delimiter, wrapInAutoLayout, false);
     }
     
     if (msg.type === 'cancel') {

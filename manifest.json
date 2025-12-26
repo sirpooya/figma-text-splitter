@@ -10,11 +10,11 @@
   ],
   "menu": [
     {
-      "name": "Run Plugin",
+      "name": "Show Plugin",
       "command": "show-ui"
     },
     {
-      "name": "Split with",
+      "name": "Split by delimiter",
       "command": "split-with",
       "parameters": [
         {
@@ -23,6 +23,10 @@
           "allowFreeform": true
         }
       ]
+    },
+    {
+      "name": "Split by line",
+      "command": "split-by-line"
     }
   ],
   "networkAccess": {
