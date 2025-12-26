@@ -128,6 +128,16 @@
     const splitButton = document.getElementById('split');
     const cancelButton = document.getElementById('cancel');
     
+    // Listen for focus message from plugin
+    window.addEventListener('message', (event) => {
+      if (event.data.pluginMessage && event.data.pluginMessage.type === 'focus-input') {
+        if (delimiterInput) {
+          delimiterInput.focus();
+          delimiterInput.select();
+        }
+      }
+    });
+    
     const wrapAutoLayoutCheckbox = document.getElementById('wrapAutoLayout');
     
     console.log('UI: Elements found:', {

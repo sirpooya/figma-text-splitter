@@ -8,6 +8,26 @@
   "editorType": [
     "figma"
   ],
+  "parameters": [
+    {
+      "name": "Delimiter",
+      "key": "delimiter",
+      "allowFreeform": true
+    }
+  ],
+  "menu": [
+    {
+      "name": "Split with",
+      "command": "split-with",
+      "parameters": [
+        {
+          "name": "Delimiter",
+          "key": "delimiter",
+          "allowFreeform": true
+        }
+      ]
+    }
+  ],
   "networkAccess": {
     "allowedDomains": ["none"]
   }
