@@ -11,7 +11,8 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       padding: 16px;
-      background: #ffffff;
+      background: var(--figma-color-bg, #ffffff);
+      color: var(--figma-color-text, #000000);
     }
     
     .container {
@@ -23,31 +24,36 @@
     h1 {
       font-size: 14px;
       font-weight: 600;
-      color: #000000;
+      color: var(--figma-color-text, #000000);
       margin-bottom: 4px;
     }
     
     .label {
       font-size: 11px;
       font-weight: 500;
-      color: #333333;
+      color: var(--figma-color-text-secondary, #666666);
       margin-bottom: 4px;
     }
     
     input[type="text"] {
       width: 100%;
       padding: 8px;
-      border: 1px solid #e5e5e5;
+      border: 1px solid var(--figma-color-border, #e5e5e5);
       border-radius: 4px;
       font-size: 12px;
       font-family: inherit;
-      background: #ffffff;
-      color: #000000;
+      background: var(--figma-color-bg, #ffffff);
+      color: var(--figma-color-text, #000000);
+    }
+    
+    input[type="text"]::placeholder {
+      color: var(--figma-color-text-tertiary, #999999);
+      opacity: 0.7;
     }
     
     input[type="text"]:focus {
       outline: none;
-      border-color: #18a0fb;
+      border-color: var(--figma-color-border-selected, #18a0fb);
     }
     
     .button-group {
@@ -73,42 +79,91 @@
     }
     
     .primary {
-      background: #18a0fb;
-      color: #ffffff;
+      background: var(--figma-color-bg-brand, #18a0fb);
+      color: var(--figma-color-text-onbrand, #ffffff);
     }
     
     .primary:hover {
-      background: #1592e6;
+      background: var(--figma-color-bg-brand-hover, #1592e6);
     }
     
     .secondary {
-      background: #f0f0f0;
-      color: #333333;
+      background: var(--figma-color-bg-secondary, #f0f0f0);
+      color: var(--figma-color-text, #333333);
     }
     
     .secondary:hover {
-      background: #e0e0e0;
+      background: var(--figma-color-bg-hover, #e0e0e0);
     }
     
     .info {
       font-size: 10px;
-      color: #666666;
+      color: var(--figma-color-text-tertiary, #999999);
       margin-top: 4px;
+    }
+    
+    .checkbox-container {
+      margin-top: 6px;
+    }
+    
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+    
+    .segmented-control {
+      display: flex;
+      background: var(--figma-color-bg-secondary, #f0f0f0);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+      margin-bottom: 12px;
+    }
+    
+    .segmented-control-item {
+      flex: 1;
+      padding: 6px 12px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+      color: var(--figma-color-text-secondary, #666666);
+      background: transparent;
+      border: none;
+    }
+    
+    .segmented-control-item.active {
+      background: var(--figma-color-bg, #ffffff);
+      color: var(--figma-color-text, #000000);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .delimiter-input-container {
+      display: block;
+    }
+    
+    .delimiter-input-container.hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div>
-      <label class="label" for="delimiter">Delimiter</label>
+    <div class="segmented-control">
+      <button class="segmented-control-item" id="mode-line">Line</button>
+      <button class="segmented-control-item active" id="mode-delimiter">Delimiter</button>
+    </div>
+    
+    <div class="delimiter-input-container" id="delimiterContainer">
       <input 
         type="text" 
         id="delimiter" 
-        placeholder="e.g., comma, semicolon, space"
+        placeholder="comma, semicolon, space"
       />
     </div>
     
-    <div>
+    <div class="checkbox-container">
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
         <input type="checkbox" id="wrapAutoLayout" style="cursor: pointer;" />
         <span class="label" style="margin: 0;">Wrap in Auto-Layout</span>
@@ -126,18 +181,46 @@
     const delimiterInput = document.getElementById('delimiter');
     const splitButton = document.getElementById('split');
     const cancelButton = document.getElementById('cancel');
+    const modeLine = document.getElementById('mode-line');
+    const modeDelimiter = document.getElementById('mode-delimiter');
+    const delimiterContainer = document.getElementById('delimiterContainer');
+    const wrapAutoLayoutCheckbox = document.getElementById('wrapAutoLayout');
+    
+    let currentMode = 'delimiter'; // 'line' or 'delimiter'
+    
+    // Handle segmented control
+    if (modeLine && modeDelimiter) {
+      modeLine.addEventListener('click', () => {
+        currentMode = 'line';
+        modeLine.classList.add('active');
+        modeDelimiter.classList.remove('active');
+        if (delimiterContainer) {
+          delimiterContainer.classList.add('hidden');
+        }
+      });
+      
+      modeDelimiter.addEventListener('click', () => {
+        currentMode = 'delimiter';
+        modeDelimiter.classList.add('active');
+        modeLine.classList.remove('active');
+        if (delimiterContainer) {
+          delimiterContainer.classList.remove('hidden');
+          if (delimiterInput) {
+            delimiterInput.focus();
+          }
+        }
+      });
+    }
     
     // Listen for focus message from plugin
     window.addEventListener('message', (event) => {
       if (event.data.pluginMessage && event.data.pluginMessage.type === 'focus-input') {
-        if (delimiterInput) {
+        if (delimiterInput && currentMode === 'delimiter') {
           delimiterInput.focus();
           delimiterInput.select();
         }
       }
     });
-    
-    const wrapAutoLayoutCheckbox = document.getElementById('wrapAutoLayout');
     
     console.log('UI: Elements found:', {
       delimiterInput: !!delimiterInput,
@@ -146,8 +229,8 @@
       wrapAutoLayoutCheckbox: !!wrapAutoLayoutCheckbox
     });
     
-    // Focus on input when plugin opens
-    if (delimiterInput) {
+    // Focus on input when plugin opens (only if delimiter mode)
+    if (delimiterInput && currentMode === 'delimiter') {
       delimiterInput.focus();
     }
     
@@ -183,21 +266,35 @@
       
       function handleSplit() {
         console.log('UI: handleSplit called!');
-        const delimiter = delimiterInput ? delimiterInput.value : '';
         const wrapInAutoLayout = wrapAutoLayoutCheckbox ? wrapAutoLayoutCheckbox.checked : false;
-        console.log('UI: Delimiter value:', delimiter);
-        console.log('UI: Delimiter length:', delimiter.length);
-        console.log('UI: Delimiter char codes:', delimiter.split('').map(c => c.charCodeAt(0)));
+        console.log('UI: Current mode:', currentMode);
         console.log('UI: Wrap in Auto-Layout:', wrapInAutoLayout);
         
         try {
-          const message = { 
-            pluginMessage: { 
-              type: 'split-text', 
-              delimiter: delimiter,
-              wrapInAutoLayout: wrapInAutoLayout
-            } 
-          };
+          let message;
+          
+          if (currentMode === 'line') {
+            // Split by line
+            message = { 
+              pluginMessage: { 
+                type: 'split-by-line',
+                wrapInAutoLayout: wrapInAutoLayout
+              } 
+            };
+          } else {
+            // Split by delimiter
+            const delimiter = delimiterInput ? delimiterInput.value : '';
+            console.log('UI: Delimiter value:', delimiter);
+            console.log('UI: Delimiter length:', delimiter.length);
+            message = { 
+              pluginMessage: { 
+                type: 'split-text', 
+                delimiter: delimiter,
+                wrapInAutoLayout: wrapInAutoLayout
+              } 
+            };
+          }
+          
           console.log('UI: Sending message:', JSON.stringify(message));
           console.log('UI: parent object:', parent);
           console.log('UI: parent.postMessage exists:', typeof parent.postMessage);

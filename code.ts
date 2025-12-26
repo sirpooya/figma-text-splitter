@@ -6,7 +6,7 @@ function escapeRegex(str: string): string {
 }
 
 // Extract split logic into a reusable function
-async function performSplit(delimiter: string, wrapInAutoLayout: boolean, stackVertically: boolean = false) {
+async function performSplit(delimiter: string, wrapInAutoLayout: boolean, stackVertically: boolean = false, isLineSplit: boolean = false) {
   // Allow newline character even though it's whitespace
   if (!delimiter || (delimiter.trim() === '' && delimiter !== '\n' && delimiter !== '\r\n')) {
     figma.notify('Please enter a delimiter');
@@ -229,7 +229,8 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean, stackV
       if (wrapInAutoLayout && newNodes.length > 0) {
         const autoLayoutFrame = figma.createFrame();
         autoLayoutFrame.name = 'Text Split';
-        autoLayoutFrame.layoutMode = 'HORIZONTAL';
+        // Use VERTICAL layout for line splits, HORIZONTAL for delimiter splits
+        autoLayoutFrame.layoutMode = isLineSplit ? 'VERTICAL' : 'HORIZONTAL';
         autoLayoutFrame.primaryAxisSizingMode = 'AUTO';
         autoLayoutFrame.counterAxisSizingMode = 'AUTO';
         autoLayoutFrame.paddingLeft = 0;
@@ -315,7 +316,7 @@ figma.on('run', ({ command, parameters }) => {
     // Split by newline character with vertical stacking
     performSplit('\n', false, true);
   } else {
-    figma.showUI(__html__, { width: 300, height: 156 });
+    figma.showUI(__html__, { width: 300, height: 156, themeColors: true });
   }
 });
 
@@ -326,6 +327,11 @@ figma.ui.onmessage = async (msg) => {
       const delimiter = msg.delimiter;
       const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
       await performSplit(delimiter, wrapInAutoLayout, false);
+    }
+    
+    if (msg.type === 'split-by-line') {
+      const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
+      await performSplit('\n', wrapInAutoLayout, true);
     }
     
     if (msg.type === 'cancel') {
