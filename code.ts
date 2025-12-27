@@ -316,7 +316,7 @@ figma.on('run', ({ command, parameters }) => {
     // Split by newline character with vertical stacking
     performSplit('\n', false, true, true);
   } else {
-    figma.showUI(__html__, { width: 300, height: 186, themeColors: true });
+    figma.showUI(__html__, { width: 224, height: 188, themeColors: true });
   }
 });
 
@@ -332,6 +332,13 @@ figma.ui.onmessage = async (msg) => {
     if (msg.type === 'split-by-line') {
       const wrapInAutoLayout = (msg as any).wrapInAutoLayout || false;
       await performSplit('\n', wrapInAutoLayout, true, true);
+    }
+    
+    if (msg.type === 'resize-ui') {
+      const height = (msg as any).height as number;
+      if (height && height > 0) {
+        figma.ui.resize(224, height);
+      }
     }
     
     if (msg.type === 'cancel') {

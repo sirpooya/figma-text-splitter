@@ -13,12 +13,24 @@
       padding: 16px;
       background: var(--figma-color-bg, #ffffff);
       color: var(--figma-color-text, #000000);
+      overflow: hidden;
+    }
+    
+    /* Hide scrollbar for webkit browsers */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Hide scrollbar for Firefox */
+    * {
+      scrollbar-width: none;
     }
     
     .container {
       display: flex;
       flex-direction: column;
       gap: 12px;
+      justify-content: space-between;
     }
     
     h1 {
@@ -179,7 +191,6 @@
     
     <div class="button-group">
       <button class="primary" id="split">Split Text</button>
-      <button class="secondary" id="cancel">Cancel</button>
     </div>
   </div>
 
@@ -187,7 +198,6 @@
     console.log('UI: Script loading...');
     const delimiterInput = document.getElementById('delimiter');
     const splitButton = document.getElementById('split');
-    const cancelButton = document.getElementById('cancel');
     const modeLine = document.getElementById('mode-line');
     const modeDelimiter = document.getElementById('mode-delimiter');
     const delimiterContainer = document.getElementById('delimiterContainer');
@@ -204,6 +214,7 @@
         if (delimiterContainer) {
           delimiterContainer.classList.add('hidden');
         }
+        setTimeout(updateUIHeight, 0);
       });
       
       modeDelimiter.addEventListener('click', () => {
@@ -216,6 +227,7 @@
             delimiterInput.focus();
           }
         }
+        setTimeout(updateUIHeight, 0);
       });
     }
     
@@ -232,9 +244,34 @@
     console.log('UI: Elements found:', {
       delimiterInput: !!delimiterInput,
       splitButton: !!splitButton,
-      cancelButton: !!cancelButton,
       wrapAutoLayoutCheckbox: !!wrapAutoLayoutCheckbox
     });
+    
+    // Calculate and set dynamic height
+    function updateUIHeight() {
+      const container = document.querySelector('.container');
+      if (container) {
+        const height = container.offsetHeight + 32; // Add padding (16px top + 16px bottom)
+        parent.postMessage({
+          pluginMessage: {
+            type: 'resize-ui',
+            height: height
+          }
+        }, '*');
+      }
+    }
+    
+    // Update height on load and when mode changes
+    setTimeout(updateUIHeight, 0);
+    
+    // Update height when delimiter container visibility changes
+    const observer = new MutationObserver(updateUIHeight);
+    if (delimiterContainer) {
+      observer.observe(delimiterContainer, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    }
     
     // Focus on input when plugin opens (only if delimiter mode)
     if (delimiterInput && currentMode === 'delimiter') {
@@ -322,16 +359,6 @@
       console.error('UI: Split button not found!');
     }
     
-    if (cancelButton) {
-      cancelButton.addEventListener('click', () => {
-        console.log('UI: Cancel button clicked');
-        parent.postMessage({ 
-          pluginMessage: { 
-            type: 'cancel' 
-          } 
-        }, '*');
-      });
-    }
     
     console.log('UI: Event listeners attached');
   </script>
