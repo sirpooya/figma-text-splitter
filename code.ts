@@ -285,11 +285,15 @@ async function performSplit(delimiter: string, wrapInAutoLayout: boolean, stackV
   if (allNewNodes.length > 0) {
     figma.currentPage.selection = allNewNodes;
     figma.notify(`Split ${totalSplit} text layer(s) into ${allNewNodes.length} new layer(s)`);
-    if (figma.command === 'split-with') {
+    if (figma.command === 'split-with' || figma.command === 'split-by-line') {
       figma.closePlugin();
     }
   } else {
-    figma.notify('No text layers were split. Make sure the delimiter exists in the selected text.');
+    if (isLineSplit) {
+      figma.notify('No text layers were split. The selected text does not contain newline characters.');
+    } else {
+      figma.notify('No text layers were split. Make sure the delimiter exists in the selected text.');
+    }
   }
 }
 

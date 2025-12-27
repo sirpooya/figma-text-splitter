@@ -1,5 +1,5 @@
 {
-  "name": "Text Splitter",
+  "name": "Split Text",
   "id": "1586488046642439664",
   "api": "1.0.0",
   "main": "code.js",
@@ -14,7 +14,7 @@
       "command": "show-ui"
     },
     {
-      "name": "Split by delimiter",
+      "name": "↳ by Delimiter",
       "command": "split-with",
       "parameters": [
         {
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "name": "Split by line",
+      "name": "↳ by Line",
       "command": "split-by-line"
     }
   ],
