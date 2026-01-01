@@ -7,8 +7,8 @@ function escapeRegex(str: string): string {
 
 // Extract split logic into a reusable function
 async function performSplit(delimiter: string, wrapInAutoLayout: boolean, stackVertically: boolean = false, isLineSplit: boolean = false) {
-  // Allow newline character even though it's whitespace
-  if (!delimiter || (delimiter.trim() === '' && delimiter !== '\n' && delimiter !== '\r\n')) {
+  // Allow space and newline characters as valid delimiters
+  if (!delimiter || delimiter.length === 0) {
     figma.notify('Please enter a delimiter');
     return;
   }
@@ -310,7 +310,7 @@ figma.on('run', ({ command, parameters }) => {
     const delimiter = parameters.delimiter as string;
     const wrapInAutoLayout = false;
     
-    if (delimiter && delimiter.trim() !== '') {
+    if (delimiter && delimiter.length > 0) {
       performSplit(delimiter, wrapInAutoLayout, false, false);
     } else {
       figma.notify('Please enter a delimiter');
@@ -320,7 +320,7 @@ figma.on('run', ({ command, parameters }) => {
     // Split by newline character with vertical stacking
     performSplit('\n', false, true, true);
   } else {
-    figma.showUI(__html__, { width: 224, height: 188, themeColors: true });
+    figma.showUI(__html__, { width: 272, height: 188, themeColors: true });
   }
 });
 
@@ -341,7 +341,7 @@ figma.ui.onmessage = async (msg) => {
     if (msg.type === 'resize-ui') {
       const height = (msg as any).height as number;
       if (height && height > 0) {
-        figma.ui.resize(224, height);
+        figma.ui.resize(272, height);
       }
     }
     
